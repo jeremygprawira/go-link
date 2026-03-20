@@ -1,0 +1,34 @@
+application:
+  name: "go-link-generator"
+  version: "1.0.0"
+  port: 8080
+  environment: "local"
+  host: "0.0.0.0"
+  timeout: 30
+  timezone: "UTC"
+
+authorization:
+  issuer: ""
+  api_key: ""
+
+cors:
+  headers_allowed:
+    - "Authorization"
+    - "Content-Type"
+    - "X-API-Key"
+    - "X-Request-ID"
+
+postgresql:
+  name: ""
+  user: ""
+  password: ""
+  host: ""
+  port: 5432
+  ssl_mode: "disable"
+  max_idle_conns: 5
+  max_open_conns: 20
+  conn_max_lifetime: "5m"
+
+tracing:
+  endpoint: ""
+  service_name: ""

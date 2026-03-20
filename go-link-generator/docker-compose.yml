@@ -1,0 +1,32 @@
+services:
+  app:
+    container_name: go-link-generator-api
+    hostname: backend
+    image: go-link-generator:latest
+    build:
+      context: .
+      dockerfile: builds/Dockerfile
+    environment:
+      - ENV=local
+    volumes:
+      - ./config/config.local.yaml:/config/config.local.yaml
+    ports:
+      - "8090:8080"
+    depends_on:
+      - postgres
+
+  postgres:
+    container_name: link-db
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+    driver: local

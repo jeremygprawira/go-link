@@ -1,0 +1,32 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/tmp/
+/builds/bin/
+
+# Go
+*.test
+*.out
+vendor/
+
+# Env
+.env
+.env.local
+*.local.yaml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Air
+tmp/
+build-errors.log
+
+# Swagger
+/docs/swagger.json
+/docs/swagger.yaml
