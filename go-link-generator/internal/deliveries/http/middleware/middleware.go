@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/jeremygprawira/go-link-generator/internal/config"
+	"github.com/jeremygprawira/go-link-generator/internal/pkg/logger"
 	"github.com/labstack/echo/v4"
 	echomiddleware "github.com/labstack/echo/v4/middleware"
 )
@@ -22,5 +23,5 @@ func (m *Middleware) Default(cfg *config.Configuration) {
 	m.e.Use(echomiddleware.Recover())
 	m.e.Use(echomiddleware.RequestID())
 	m.e.Use(CORSMiddleware(cfg))
-	m.e.Use(LoggerMiddleware())
+	m.e.Use(m.LoggingMiddleware(logger.Instance))
 }

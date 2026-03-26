@@ -25,6 +25,7 @@ func (hs *healthService) Check(ctx context.Context) (*models.HealthResponse, err
 
 	var postgreHealth models.HealthDetailResponse
 	postgreErr := hs.d.Repository.Postgre.Health.Check(ctx)
+	kafkaProducerErr := hs.d.Producer.Check(ctx)
 	if postgreErr != nil {
 		postgreHealth = models.HealthDetailResponse{
 			Type:        models.TYPE_HEALTH,
@@ -40,6 +41,24 @@ func (hs *healthService) Check(ctx context.Context) (*models.HealthResponse, err
 			Status:    "OK",
 		}
 		healthDetail = append(healthDetail, postgreHealth)
+	}
+
+	var kafkaHealth models.HealthDetailResponse
+	if kafkaProducerErr != nil {
+		kafkaHealth = models.HealthDetailResponse{
+			Type:        models.TYPE_HEALTH,
+			Component:   "Kafka Producer",
+			Status:      "ERROR",
+			Description: fmt.Sprintf("Kafka Producer is not healthy, due to: %v", kafkaProducerErr),
+		}
+		healthDetail = append(healthDetail, kafkaHealth)
+	} else {
+		kafkaHealth = models.HealthDetailResponse{
+			Type:      models.TYPE_HEALTH,
+			Component: "Kafka Producer",
+			Status:    "OK",
+		}
+		healthDetail = append(healthDetail, kafkaHealth)
 	}
 
 	return &models.HealthResponse{

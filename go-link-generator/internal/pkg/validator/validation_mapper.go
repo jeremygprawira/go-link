@@ -2,38 +2,41 @@ package validator
 
 import (
 	"fmt"
-	"github.com/jeremygprawira/go-link-generator/internal/models"
 	"strings"
 	"time"
+
+	"github.com/jeremygprawira/go-link-generator/internal/models"
 
 	v10 "github.com/go-playground/validator/v10"
 )
 
 // Validation tag constants for type safety
 const (
-	TagRequired              = "required"
-	TagRequiredWithout       = "required_without"
-	TagRequiredWithoutAll    = "required_without_all"
-	TagOneOf                 = "oneof"
-	TagMin                   = "min"
-	TagMax                   = "max"
-	TagEmail                 = "email"
-	TagNoSpecial             = "nospecial"
-	TagNoStartEndSpaces      = "noStartEndSpaces"
-	TagDate                  = "date"
-	TagDatetime              = "datetime"
-	TagYYYMMDDFormat         = "yyymmddFormat"
-	TagPhoneFormat           = "phoneFormat"
-	TagEmailFormat           = "emailFormat"
-	TagEmailPhoneFormat      = "emailPhoneFormat"
-	TagNumeric               = "numeric"
-	TagDateRange             = "daterange"
-	TagYYYYMMDDNoExceedToday = "yyyymmddNoExceedToday"
-	TagHHMMFormat            = "hhmmFormat"
-	TagEmailOrPhoneField     = "emailOrPhoneField"
-	TagPasswordMinLength     = "passwordMinLength"
-	TagPasswordMaxLength     = "passwordMaxLength"
-	TagPasswordStrength      = "passwordStrength"
+	TagRequired                   = "required"
+	TagRequiredWithout            = "required_without"
+	TagRequiredWithoutAll         = "required_without_all"
+	TagOneOf                      = "oneof"
+	TagMin                        = "min"
+	TagMax                        = "max"
+	TagEmail                      = "email"
+	TagNoSpecial                  = "nospecial"
+	TagNoStartEndSpaces           = "noStartEndSpaces"
+	TagDate                       = "date"
+	TagDatetime                   = "datetime"
+	TagYYYMMDDFormat              = "yyymmddFormat"
+	TagPhoneFormat                = "phoneFormat"
+	TagEmailFormat                = "emailFormat"
+	TagEmailPhoneFormat           = "emailPhoneFormat"
+	TagNumeric                    = "numeric"
+	TagDateRange                  = "daterange"
+	TagYYYYMMDDNoExceedToday      = "yyyymmddNoExceedToday"
+	TagHHMMFormat                 = "hhmmFormat"
+	TagEmailOrPhoneField          = "emailOrPhoneField"
+	TagPasswordMinLength          = "passwordMinLength"
+	TagPasswordMaxLength          = "passwordMaxLength"
+	TagPasswordStrength           = "passwordStrength"
+	TagShortenerOrCustomizedCode  = "shortenerOrCustomizedCode"
+	TagAlphanumericsWithDelimiter = "alphanumericsWithDelimiter"
 )
 
 // Error code constants
@@ -184,6 +187,18 @@ var validationErrorMap = map[string]validationErrorConfig{
 		Code: ErrorCodeInvalidField,
 		MessageBuilder: func(fe v10.FieldError) string {
 			return fmt.Sprintf("%s must contain at least one uppercase letter, one lowercase letter, one number, and one special character", fe.Field())
+		},
+	},
+	TagShortenerOrCustomizedCode: {
+		Code: ErrorCodeInvalidField,
+		MessageBuilder: func(fe v10.FieldError) string {
+			return fmt.Sprintf("%s must be a valid shortener or customized code", fe.Field())
+		},
+	},
+	TagAlphanumericsWithDelimiter: {
+		Code: ErrorCodeInvalidField,
+		MessageBuilder: func(fe v10.FieldError) string {
+			return fmt.Sprintf("%s must be a valid alphanumerics with delimiter", fe.Field())
 		},
 	},
 }

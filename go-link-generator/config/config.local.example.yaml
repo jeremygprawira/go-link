@@ -32,3 +32,42 @@ postgresql:
 tracing:
   endpoint: ""
   service_name: ""
+
+url:
+  length: 1
+  code_generation_retries: 1
+  code_generation_backoff: 1
+  secret: ""
+  machine_id: 1
+  secure_length: 1
+
+kafka:
+  brokers:
+    - ""
+  topics:
+    link: ""
+    link_dlq: "" 
+  producer:
+    required_acks: "all"
+    retry:
+      max: 1
+      backoff: 250ms
+    partitioner: "hash"
+    max_message_bytes: 1
+    timeout:
+      dial: 10s
+      read: 10s
+      write: 10s
+  consumer:
+    group_id: ""
+    initial_offset: ""
+    retry:
+      max: 1
+      backoff: 1
+    timeout:
+      dial: 10s
+      read: 10s
+      write: 10s
+      session: 10s
+      rebalance: 60s
+    heartbeat_interval: 3s

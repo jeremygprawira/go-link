@@ -6,7 +6,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 )
-func New(api *echo.Group, svc *service.Service, cfg *config.Configuration) {
+
+func New(api *echo.Group, service *service.Service, config *config.Configuration) {
 	v1 := api.Group("/v1")
-	NewUserV1(v1, svc, cfg)
+	NewUrlV1(v1, service, config)
 }

@@ -7,12 +7,12 @@ import (
 // PostgreRepository aggregates all PostgreSQL repositories.
 type PostgreRepository struct {
 	Health HealthRepository
-	User   UserRepository
+	Url    UrlRepository
 }
 
 func New(db *pgxpool.Pool) *PostgreRepository {
 	return &PostgreRepository{
 		Health: NewHealthRepository(db),
-		User:   NewUserRepository(db),
+		Url:    NewUrlRepository(db),
 	}
 }

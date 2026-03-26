@@ -1,35 +1,24 @@
 package validator
 
 import (
-	"errors"
-	"fmt"
-
-	"golang.org/x/crypto/bcrypt"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/base64"
 )
 
-// validator.Hash is a package-level convenience function that verifies a password against a hash.
-// This allows you to verify passwords without creating a hasher instance first.
-//
-// Example:
-//
-//	match, err := generator.Verify("MyPassword123", storedHash)
-//	if err != nil {
-//	    log.Fatal(err)
-//	}
-//	if match {
-//	    fmt.Println("Password is correct!")
-//	}
-func Hash(password, hashedPassword string) (bool, error) {
-	// Compare password with hash
-	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
-	if err != nil {
-		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
-			// Password doesn't match - this is not an error, just return false
-			return false, nil
-		}
-		// Actual error occurred (e.g., malformed hash)
-		return false, fmt.Errorf("failed to verify password: %w", err)
+// HMAC validates whether a given string has a valid HMAC signature.
+// This is used to verify the integrity of codes generated via generator.SnowflakeID(...).Base62().AddHMAC(...)
+func HMAC(secret, code string, length int) bool {
+	if len(code) <= length {
+		return false
 	}
 
-	return true, nil
+	idStr := code[:len(code)-length]
+	expectedSignature := code[len(code)-length:]
+
+	hmac := hmac.New(sha256.New, []byte(secret))
+	hmac.Write([]byte(idStr))
+	calculatedSignature := base64.RawURLEncoding.EncodeToString(hmac.Sum(nil))[:length]
+
+	return expectedSignature == calculatedSignature
 }

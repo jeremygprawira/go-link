@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/v1/users": {
+        "/api/v1/url": {
             "post": {
-                "description": "Register a new user with email, phone number, and password. Auto-generates account number.",
+                "description": "Creates a new shortened URL, optionally with a customized code. Auto-generates a highly-secure Snowflake ID if no code is provided.",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,23 +25,23 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Users"
+                    "URLs"
                 ],
-                "summary": "Create New User",
+                "summary": "Create New Short URL",
                 "parameters": [
                     {
-                        "description": "User Registration Details",
+                        "description": "URL Creation Details",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CreateUserRequest"
+                            "$ref": "#/definitions/models.CreateUrlRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "User Created Successfully",
+                        "description": "URL Created Successfully",
                         "schema": {
                             "allOf": [
                                 {
@@ -51,7 +51,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/models.CreateUserResponse"
+                                            "$ref": "#/definitions/models.CreateUrlResponse"
                                         }
                                     }
                                 }
@@ -65,65 +65,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "User Already Exists (Email or Phone)",
-                        "schema": {
-                            "$ref": "#/definitions/models.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/users/me": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get user information by access token",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Get User By Access Token",
-                "responses": {
-                    "200": {
-                        "description": "User Information Retrieved Successfully",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/models.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/models.GetUserByAccountNumberResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid Input / Validation Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.Response"
-                        }
-                    },
-                    "404": {
-                        "description": "User Not Found",
+                        "description": "URL Code Already Exists",
                         "schema": {
                             "$ref": "#/definitions/models.Response"
                         }
@@ -139,91 +81,81 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.CreateUserRequest": {
+        "models.CreateUrlRequest": {
             "type": "object",
             "required": [
-                "name",
-                "password"
+                "accountNumber",
+                "state",
+                "url"
             ],
             "properties": {
-                "email": {
+                "accountNumber": {
                     "type": "string",
-                    "example": "john.doe@example.com"
+                    "example": "93090290290"
+                },
+                "code": {
+                    "type": "string",
+                    "example": "john-doe"
+                },
+                "expiredAt": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "object"
                 },
                 "name": {
                     "type": "string",
                     "example": "John Doe"
                 },
-                "password": {
-                    "type": "string",
-                    "example": "password123"
+                "state": {
+                    "type": "string"
                 },
-                "phoneNumber": {
-                    "$ref": "#/definitions/models.PhoneNumber"
+                "url": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
                 }
             }
         },
-        "models.CreateUserResponse": {
+        "models.CreateUrlResponse": {
             "type": "object",
             "properties": {
                 "accountNumber": {
                     "type": "string",
-                    "example": "1234567890"
+                    "example": "8989489484"
+                },
+                "code": {
+                    "type": "string"
                 },
                 "createdAt": {
                     "type": "string",
                     "example": "2026-01-24T15:57:37+07:00"
                 },
-                "email": {
+                "expiredAt": {
                     "type": "string",
-                    "example": "john.doe@example.com"
+                    "example": "2026-01-24T15:57:37+07:00"
+                },
+                "metadata": {
+                    "type": "object"
                 },
                 "name": {
                     "type": "string",
-                    "example": "John Doe"
+                    "example": "example.com - shortened"
                 },
-                "phoneNumber": {
-                    "$ref": "#/definitions/models.PhoneNumber"
+                "state": {
+                    "type": "string",
+                    "example": "active"
                 },
                 "type": {
                     "type": "string",
-                    "example": "user"
+                    "example": "url"
                 },
                 "updatedAt": {
                     "type": "string",
                     "example": "2026-01-24T15:57:37+07:00"
-                }
-            }
-        },
-        "models.GetUserByAccountNumberResponse": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string",
-                    "example": "1234567890"
                 },
-                "createdAt": {
+                "url": {
                     "type": "string",
-                    "example": "2026-01-24T15:57:37+07:00"
-                },
-                "email": {
-                    "type": "string",
-                    "example": "john.doe@example.com"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "John Doe"
-                },
-                "phoneNumber": {
-                    "$ref": "#/definitions/models.PhoneNumber"
-                },
-                "type": {
-                    "type": "string",
-                    "example": "user"
-                },
-                "updatedAt": {
-                    "type": "string",
-                    "example": "2026-01-24T15:57:37+07:00"
+                    "example": "http://example.com"
                 }
             }
         },
@@ -255,19 +187,6 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
-                }
-            }
-        },
-        "models.PhoneNumber": {
-            "type": "object",
-            "properties": {
-                "countryCode": {
-                    "type": "string",
-                    "example": "ID"
-                },
-                "number": {
-                    "type": "string",
-                    "example": "6281234567890"
                 }
             }
         },

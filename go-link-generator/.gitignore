@@ -30,3 +30,5 @@ build-errors.log
 # Swagger
 /docs/swagger.json
 /docs/swagger.yaml
+
+consumer

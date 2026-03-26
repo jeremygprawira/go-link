@@ -47,6 +47,7 @@ help:
 	@echo "  make run-dev                  - Run with config.dev.yaml"
 	@echo "  make run-uat                  - Run with config.uat.yaml"
 	@echo "  make run-prod                 - Run with config.prod.yaml"
+	@echo "  make run-consumer             - Run kafka consumer (ENV=local|dev|uat|prod)"
 	@echo ""
 	@echo "📦 Container & Deploy:"
 	@echo "  make docker-up                - Start services with Docker Compose"
@@ -130,6 +131,14 @@ run-uat:
 
 run-prod:
 	@$(MAKE) run ENV=prod
+
+run-consumer:
+	@echo "🚀 Running Kafka consumer with ENV=$(ENV)..."
+	@if [ ! -f config/config.$(ENV).yaml ]; then \
+		echo "❌ ERROR: config/config.$(ENV).yaml not found"; \
+		exit 1; \
+	fi
+	@ENV=$(ENV) go run cmd/consumer/main.go | jq -R '. as $$line | try (fromjson) catch $$line'
 
 # Hot-reload development (requires air: go install github.com/air-verse/air@latest)
 dev:

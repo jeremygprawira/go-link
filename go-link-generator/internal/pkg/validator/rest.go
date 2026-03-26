@@ -2,12 +2,14 @@ package validator
 
 import (
 	"errors"
-	"github.com/jeremygprawira/go-link-generator/internal/models"
 	"net/mail"
 	"reflect"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/jeremygprawira/go-link-generator/internal/config"
+	"github.com/jeremygprawira/go-link-generator/internal/models"
 
 	v10 "github.com/go-playground/validator/v10"
 	"github.com/hashicorp/go-multierror"
@@ -21,7 +23,16 @@ var (
 	noSpecialCharsPattern *regexp.Regexp
 	datePattern           *regexp.Regexp
 	datetimePattern       *regexp.Regexp
+
+	urlSecret       string
+	urlSecureLength int = 3
 )
+
+// Initialize provides configuration to the validator package
+func Initialize(config *config.Configuration) {
+	urlSecret = config.Url.Secret
+	urlSecureLength = config.Url.SecureLength
+}
 
 // Validate validates a struct and returns validation errors
 func Input(request interface{}) error {
@@ -77,6 +88,8 @@ func init() {
 	registeryyyymmddFormat()
 	registerEmailOrPhoneField()
 	registerPasswordValidations()
+	accountNumber()
+	alphanumericsWithDelimiter()
 }
 
 // Helper function to safely get string value from field
@@ -255,6 +268,19 @@ func registeryyyymmddFormat() {
 	}
 }
 
+func accountNumber() {
+	if err := valid.RegisterValidation("accountNumber", func(fl v10.FieldLevel) bool {
+		input, ok := getStringValue(fl)
+		if !ok {
+			return false // Invalid Type
+		}
+
+		return AccountNumber(input)
+	}); err != nil {
+		panic(err)
+	}
+}
+
 func registerEmailOrPhoneField() {
 	if err := valid.RegisterValidation("emailOrPhoneField", func(fl v10.FieldLevel) bool {
 		parent := fl.Parent()
@@ -285,6 +311,48 @@ func registerEmailOrPhoneField() {
 
 		// If both are filled, it's valid (you can adjust this logic if needed)
 		return true
+	}); err != nil {
+		panic(err)
+	}
+}
+
+func alphanumericsWithDelimiter() {
+	if err := valid.RegisterValidation("alphanumericsWithDelimiter", func(fl v10.FieldLevel) bool {
+		str, ok := getStringValue(fl)
+		if !ok {
+			return false // Invalid type
+		}
+
+		if str == "" {
+			return false // Empty strings are valid
+		}
+
+		return regexp.MustCompile("^[a-zA-Z0-9]+([_-]?[a-zA-Z0-9]+)*$").MatchString(str)
+	}); err != nil {
+		panic(err)
+	}
+}
+
+func shortenerOrCustomizedCode() {
+	if err := valid.RegisterValidation("shortenerOrCustomizedCode", func(fl v10.FieldLevel) bool {
+		str, ok := getStringValue(fl)
+		if !ok {
+			return false // Invalid type
+		}
+
+		if str == "" {
+			return false // Empty strings are not valid
+		}
+
+		// 1. If the user provided the FULL code (including the HMAC), this will pass.
+		if SnowflakeSystemCode(str, urlSecret, urlSecureLength) {
+			return true
+		}
+
+		// 2. If the user searched WITHOUT the HMAC code, it fails the system check above.
+		// In this case, we validate that the raw string is correctly formatted alphanumerically.
+		// The service layer can then append the HMAC later when querying the DB.
+		return regexp.MustCompile("^[a-zA-Z0-9]+([_-]?[a-zA-Z0-9]+)*$").MatchString(str)
 	}); err != nil {
 		panic(err)
 	}

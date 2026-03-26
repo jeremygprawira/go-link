@@ -5,24 +5,19 @@ import (
 	"fmt"
 
 	"github.com/jeremygprawira/go-link-generator/internal/config"
-	handler "github.com/jeremygprawira/go-link-generator/internal/deliveries/http"
+	delivery "github.com/jeremygprawira/go-link-generator/internal/deliveries/kafka"
 	"github.com/jeremygprawira/go-link-generator/internal/pkg/broker"
 	"github.com/jeremygprawira/go-link-generator/internal/pkg/database"
 	"github.com/jeremygprawira/go-link-generator/internal/pkg/logger"
 	"github.com/jeremygprawira/go-link-generator/internal/pkg/tracer"
-	"github.com/jeremygprawira/go-link-generator/internal/pkg/validator"
 	"github.com/jeremygprawira/go-link-generator/internal/repository"
 	"github.com/jeremygprawira/go-link-generator/internal/service"
-	"github.com/labstack/echo/v4"
 )
 
-func Setup(configuration *config.Configuration) (*echo.Echo, error) {
+// SetupConsumer wires all core infrastructure and dependency injections specifically
+// designed for background message workers like the Kafka consumer.
+func SetupConsumer(configuration *config.Configuration) (*broker.Consumer, error) {
 	logger.Initialize(configuration)
-	validator.Initialize(configuration)
-
-	e := echo.New()
-	e.HideBanner = true
-	e.HidePort = true
 
 	tp, err := tracer.Initialize(configuration)
 	if err != nil {
@@ -50,7 +45,14 @@ func Setup(configuration *config.Configuration) (*echo.Echo, error) {
 		Producer:   producer,
 	})
 
-	handler.New(e, svc, configuration)
+	// Multiplexer for incoming streams
+	handler := delivery.New(svc, configuration)
 
-	return e, nil
+	consumer, err := broker.New(configuration).NewConsumer(handler.HandleMessage)
+	if err != nil {
+		logger.Instance.Error(context.Background(), "failed to construct kafka consumer", logger.Error(err))
+		return nil, fmt.Errorf("failed to construct kafka consumer: %w", err)
+	}
+
+	return consumer, nil
 }
